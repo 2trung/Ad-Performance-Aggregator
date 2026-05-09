@@ -6,6 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Main {
@@ -120,41 +123,16 @@ public class Main {
 
 	private static class MemoryMonitor {
 		private final AtomicLong peakUsedBytes = new AtomicLong();
-		private volatile boolean running;
-		private Thread samplerThread;
+		private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
 		void start() {
-			running = true;
 			sample();
-			samplerThread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					while (running) {
-						sample();
-						try {
-							Thread.sleep(50L);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							return;
-						}
-					}
-				}
-			}, "heap-monitor");
-			samplerThread.setDaemon(true);
-			samplerThread.start();
+			executor.scheduleAtFixedRate(this::sample, 0, 50, TimeUnit.MILLISECONDS);
 		}
 
 		void stop() {
-			running = false;
-			if (samplerThread != null) {
-				samplerThread.interrupt();
-				try {
-					samplerThread.join(200L);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			}
 			sample();
+			executor.shutdownNow();
 		}
 
 		long getPeakUsedBytes() {
