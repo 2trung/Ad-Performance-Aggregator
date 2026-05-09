@@ -65,6 +65,16 @@ At the end of each run, the CLI prints:
 
 The peak memory value is sampled from the JVM heap during the run, so it is best treated as a practical runtime estimate rather than a precise JVM profiler reading.
 
+### Processing model
+
+The CSV aggregation stage now uses a bounded multi-threaded batch pipeline:
+
+- one reader thread streams the input file
+- worker threads process fixed-size batches in parallel
+- the number of in-flight batches is capped to keep heap usage stable
+
+This gives better throughput on multi-core CPUs without reintroducing the large memory spike from the original fully buffered approach.
+
 ## Docker
 
 Build the image:
