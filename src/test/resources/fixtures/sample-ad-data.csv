@@ -1,0 +1,8 @@
+campaign_id,campaign_name,impressions,clicks,spend,conversions
+camp-a,Alpha,100,10,50.00,5
+camp-b,Beta,200,10,20.00,10
+camp-a,Alpha,50,5,10.00,1
+camp-c,Gamma,80,0,8.00,0
+bad-row
+camp-d,Delta,25,5,5.00,0
+
